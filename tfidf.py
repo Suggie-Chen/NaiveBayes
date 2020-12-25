@@ -1,22 +1,27 @@
+#tfidf
+
 import os
 import math
 import numpy as np
 
-ROOTPATH='D:\机器学习数据\sy发的数据\clean_data_frequence'
-categories=  ['健康', '商业', '娱乐', '教育', '文化', '游戏', '烦恼', '生活', '电脑', '社会']#注意不可改变顺序！！！！
+ROOTPATH='C:\\Users\92994\Desktop\sy2\clean_data2.1'
+global categories#=  ['健康', '商业', '娱乐', '教育', '文化', '游戏', '烦恼', '生活', '电脑', '社会']#注意不可改变顺序！！！！
 global cateCount
-CATENUM=10#类别总数
+global CATENUM#类别总数
 global VOCABULARYNUM
 global bigDic
 global gmatrix
+global idfBook;
 
 def form_big_dic():
     # 构造所有类别的词典
-    global bigDic
+    global bigDic,categories
     bigDic = dict()
     contents = os.listdir(ROOTPATH)  # 电脑、烦恼、健康。。。。
+    categories=[]
     for each in contents:  # each是电脑、烦恼、健康等某一类
         if os.path.isdir(ROOTPATH + '\\' + each):  # 判断是文件夹，打开
+            categories.append(each)
             bigDic[each] = read_file(ROOTPATH + '\\' + each + '\\' + 'dict.txt')
     # print(bigDic)
     # print(len(bigDic['电脑']))
@@ -32,7 +37,10 @@ def read_file(filepath):
             if each:#each不为空
                 temp=each.split()
                 # print(temp)
-                d[temp[0]]=int(temp[1])
+                if len(temp)==2:
+                    d[temp[0]]=float(temp[1])
+                else:
+                    d[temp[0]] =0
     return d
 
 
@@ -51,7 +59,9 @@ def Vnb(text,V):
     l=text.split()
     for j in V:#对于每一类
         for word in l:#对弈一篇文本中的每一个单词
-            tans=tans+math.log(P(word,j),10)
+            idf=idfBook.get(word,math.log(50000,10))
+            # print(idf)
+            tans=tans+math.log(P(word,j)*idf,10)
         # print("tans=",tans)
         if tans>max:
             max=tans
@@ -70,9 +80,26 @@ def cal_cateCount(categories):
         cateCount[vj]=n
         n=0
 
+# 打印混淆矩阵
+def print_matrix(matrix):
+    print('{:>8}'.format(''), end='')
+    for label in range(len(categories)):
+        print('{:>7}'.format(categories[label]), end='')
+    print('\n')
+    for row in range(len(categories)):
+        print('{:>8}'.format(categories[row]), end='')
+        for col in range(len(categories)):
+            print('{:>8}'.format(matrix[row][col][0]), end='')
+        print('\n')
+
+# def print_matrix(matrix):
+#     print(categories)
+#     for i in range(len(categories)):
+#         print(categories[i],matrix[i])
+
 def classify_all_texts(rootpath,matrix):
     contents = os.listdir(rootpath)  # 电脑、烦恼、健康。。。。
-    # print(contents)#注意顺序！！！
+    print(contents)#注意顺序！！！
     for each in contents:  # each是电脑、烦恼、健康等某一类
         if os.path.isdir(rootpath + '\\' + each):  # 判断是文件夹，打开
             texts = os.listdir(rootpath + '\\' + each + '\\' + 'test')
@@ -83,7 +110,8 @@ def classify_all_texts(rootpath,matrix):
                     i = categories.index(each)  # 实际值
                     j = categories.index(vj)  # 预测值
                     matrix[i][j][0] += 1
-    print(matrix)
+    # print(matrix)
+    print_matrix(matrix)
 
 def cal_precision_and_recall(matrix):
     precisionList = []
@@ -94,8 +122,8 @@ def cal_precision_and_recall(matrix):
             sum = sum + matrix[i][j][0]
 
         a = matrix[j][j][0]
-        recall = a / 5000
-        precision = a / sum
+        recall = a / sum
+        precision = a / 5000
         precisionList.append(precision)
         recallList.append(recall)
         print("类别：", categories[j])
@@ -115,12 +143,14 @@ if __name__ == '__main__':
     # print(book)
     print("VOCABULARY=",VOCABULARYNUM)
 
+    idfBook=read_file(ROOTPATH+'\\'+"idf.txt")
     #构造所有类别的词典
     form_big_dic()
 
     #计算每一类的位置总数
     cateCount=dict()
     cal_cateCount(categories)
+    CATENUM=len(cateCount)
     print(cateCount)
 
     #测试一篇文章
