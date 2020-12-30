@@ -21,12 +21,13 @@ for file in os.listdir(path):
 
     if os.path.isdir(file_path):
         i = 1
-        sp=[]
+
         # f_idf=open('idf.txt','w')
         file_path+='/train'
 
         '''进入每一类的train文件夹'''
         for each_file in os.listdir(file_path):
+            sp = []
             each_path=file_path+'/'+each_file
             f=open(each_path,'r', encoding='utf-8')
             # print(type+'\t'+each_file)

@@ -61,7 +61,8 @@ def Vnb(text,V):
         for word in l:#对弈一篇文本中的每一个单词
             idf=idfBook.get(word,math.log(50000,10))
             # print(idf)
-            tans=tans+math.log(P(word,j)*idf,10)
+            p=P(word,j)
+            tans=tans+math.log(p*idf,10)
         # print("tans=",tans)
         if tans>max:
             max=tans
@@ -122,8 +123,8 @@ def cal_precision_and_recall(matrix):
             sum = sum + matrix[i][j][0]
 
         a = matrix[j][j][0]
-        recall = a / sum
-        precision = a / 5000
+        recall = a / 5000
+        precision = a / sum
         precisionList.append(precision)
         recallList.append(recall)
         print("类别：", categories[j])
