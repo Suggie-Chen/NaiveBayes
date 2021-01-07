@@ -13,8 +13,8 @@ global bigDic
 global gmatrix
 global idfBook;
 
+# 构造所有类别的词典
 def form_big_dic():
-    # 构造所有类别的词典
     global bigDic,categories
     bigDic = dict()
     contents = os.listdir(ROOTPATH)  # 电脑、烦恼、健康。。。。
@@ -93,14 +93,9 @@ def print_matrix(matrix):
             print('{:>8}'.format(matrix[row][col][0]), end='')
         print('\n')
 
-# def print_matrix(matrix):
-#     print(categories)
-#     for i in range(len(categories)):
-#         print(categories[i],matrix[i])
-
 def classify_all_texts(rootpath,matrix):
     contents = os.listdir(rootpath)  # 电脑、烦恼、健康。。。。
-    print(contents)#注意顺序！！！
+    print(contents)
     for each in contents:  # each是电脑、烦恼、健康等某一类
         if os.path.isdir(rootpath + '\\' + each):  # 判断是文件夹，打开
             texts = os.listdir(rootpath + '\\' + each + '\\' + 'test')
@@ -117,6 +112,7 @@ def classify_all_texts(rootpath,matrix):
 def cal_precision_and_recall(matrix):
     precisionList = []
     recallList = []
+    f1List=[]
     for j in range(CATENUM):  # 先对列进行遍历
         sum = 0
         for i in range(CATENUM):
@@ -125,16 +121,19 @@ def cal_precision_and_recall(matrix):
         a = matrix[j][j][0]
         recall = a / 5000
         precision = a / sum
+        f1=(2*precision*recall)/(precision+recall)
         precisionList.append(precision)
         recallList.append(recall)
+        f1List.append(f1)
         print("类别：", categories[j])
-        print("a:", a)
-        print("sum:", sum)
-        print("precision={} , recall={}".format(precision, recall))
+        # print("a:", a)
+        # print("sum:", sum)
+        print("precision={:.6f} , recall={:.6f},f1={:.6f}".format(precision, recall,f1))
 
     total_precision = np.mean(precisionList)
     total_recall = np.mean(recallList)
-    print("total_precision={} , total_recall={}".format(total_precision, total_recall))
+    total_f1=np.mean(f1List)
+    print("total_precision={:.6f} , total_recall={:.6f},total_f1={:.6f}".format(total_precision, total_recall,total_f1))
 
 
 if __name__ == '__main__':
@@ -153,11 +152,6 @@ if __name__ == '__main__':
     cal_cateCount(categories)
     CATENUM=len(cateCount)
     print(cateCount)
-
-    #测试一篇文章
-    # with open("D:\机器学习数据\sy发的数据\clean_data _newdict\电脑\\test\\test20.txt", encoding='utf-8') as fp:
-    #     string = fp.read()
-    #     vj=Vnb(string,categories)
 
     #对所有文章进行分类
     gmatrix = [[[0] for j in range(CATENUM)] for i in range(CATENUM)]
